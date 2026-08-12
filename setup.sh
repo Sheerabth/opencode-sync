@@ -9,6 +9,17 @@ if [ "${OPENCODE_SYNC_REPO:-}" != "" ]; then
   REPO_URL="$OPENCODE_SYNC_REPO"
 fi
 
+for arg in "$@"; do
+  case "$arg" in
+    -f|--force) OC_SYNC_FORCE=1 ;;
+  esac
+done
+
+if pgrep -x opencode >/dev/null && [ "${OC_SYNC_FORCE:-0}" -eq 0 ]; then
+  echo "opencode is running - close it first (or use: setup.sh -f)"
+  exit 1
+fi
+
 command -v python3 >/dev/null 2>&1 || { echo "python3 is required"; exit 1; }
 command -v rclone >/dev/null 2>&1 || { echo "rclone is required (brew install rclone)"; exit 1; }
 
