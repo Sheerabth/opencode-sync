@@ -46,14 +46,13 @@ fi
 
 mkdir -p "$DATA_DIR"
 
-source "$SYNC_DIR/oc-sync.sh"
-
 echo "Ensuring Koofr sync folder exists..."
 rclone mkdir koofr:opencode
 
-echo "Running initial oc-sync --resync --yes..."
-oc-sync --resync --yes
-
 echo ""
-echo "Setup complete. Reload your shell or run:"
-echo "  source $SYNC_DIR/oc-sync.sh"
+echo "Setup complete."
+echo ""
+echo "Next steps:"
+echo "  1. Reload your shell: exec zsh"
+echo "  2. Close opencode."
+echo "  3. Run first sync: oc-sync --resync"

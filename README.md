@@ -28,6 +28,11 @@ paths. Each machine denormalizes to its own home dir on download.
 2. On each machine:
    ```bash
    curl -fsSL https://raw.githubusercontent.com/Sheerabth/opencode-sync/main/setup.sh | bash
+   exec zsh
+   ```
+3. Close opencode and run the first sync:
+   ```bash
+   oc-sync --resync
    ```
    On a new machine, **run this before launching opencode** so it pulls the DB
    from Koofr instead of creating an empty one.
