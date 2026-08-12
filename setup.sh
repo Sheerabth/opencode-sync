@@ -23,6 +23,11 @@ chmod +x "$SYNC_DIR/oc-merge.py" "$SYNC_DIR/oc-sync.sh"
 
 echo "$REPO_URL" > "$SYNC_DIR/repo-url"
 
+if grep -q "/.local/share/opencode/.sync/oc-sync.sh" "$HOME/.zshrc" 2>/dev/null; then
+  sed -i '' '/\/\.local\/share\/opencode\/\.sync\/oc-sync\.sh/d' "$HOME/.zshrc"
+  echo "Removed old oc-sync source line from ~/.zshrc"
+fi
+
 if ! grep -q "source \"$SYNC_DIR/oc-sync.sh\"" "$HOME/.zshrc" 2>/dev/null; then
   echo "source \"$SYNC_DIR/oc-sync.sh\"" >> "$HOME/.zshrc"
   echo "Added oc-sync to ~/.zshrc"
