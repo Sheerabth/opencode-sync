@@ -18,7 +18,7 @@ paths. Each machine denormalizes to its own home dir on download.
 
 ## Files
 
-- `setup.sh` — one-command installer/bootstrap
+- `setup.sh` — one-command installer/bootstrap (installs to `~/.config/opencode-sync/`)
 - `oc-sync.sh` — `oc-sync` shell function (backs up, syncs files, merges DB, pushes DB)
 - `oc-merge.py` — SQLite session-level merge logic + path normalization
 

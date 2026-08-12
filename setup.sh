@@ -2,22 +2,10 @@
 set -euo pipefail
 
 REPO_URL="https://raw.githubusercontent.com/Sheerabth/opencode-sync/main"
-DATA_DIR="$HOME/.local/share/opencode"
-SYNC_DIR="$DATA_DIR/.sync"
+SYNC_DIR="$HOME/.config/opencode-sync"
 
 if [ "${OPENCODE_SYNC_REPO:-}" != "" ]; then
   REPO_URL="$OPENCODE_SYNC_REPO"
-fi
-
-for arg in "$@"; do
-  case "$arg" in
-    -f|--force) OC_SYNC_FORCE=1 ;;
-  esac
-done
-
-if pgrep -x opencode >/dev/null && [ "${OC_SYNC_FORCE:-0}" -eq 0 ]; then
-  echo "opencode is running - close it first (or use: setup.sh -f)"
-  exit 1
 fi
 
 command -v python3 >/dev/null 2>&1 || { echo "python3 is required"; exit 1; }
@@ -31,7 +19,7 @@ mkdir -p "$SYNC_DIR"
 
 curl -fsSL "$REPO_URL/oc-merge.py" -o "$SYNC_DIR/oc-merge.py"
 curl -fsSL "$REPO_URL/oc-sync.sh" -o "$SYNC_DIR/oc-sync.sh"
-chmod +x "$SYNC_DIR/oc-merge.py"
+chmod +x "$SYNC_DIR/oc-merge.py" "$SYNC_DIR/oc-sync.sh"
 
 echo "$REPO_URL" > "$SYNC_DIR/repo-url"
 
@@ -55,8 +43,6 @@ else
   echo "Koofr remote already configured"
 fi
 
-mkdir -p "$DATA_DIR"
-
 echo "Ensuring Koofr sync folder exists..."
 rclone mkdir koofr:opencode
 
@@ -66,4 +52,4 @@ echo ""
 echo "Next steps:"
 echo "  1. Reload your shell: exec zsh"
 echo "  2. Close opencode."
-echo "  3. Run first sync: oc-sync --resync"
+echo "  3. Run first sync: oc-sync"

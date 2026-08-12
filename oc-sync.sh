@@ -1,6 +1,6 @@
 oc-sync() {
   local dir=~/.local/share/opencode
-  local syncdir="$dir/.sync"
+  local syncdir=~/.config/opencode-sync
   local remote="koofr:opencode"
   local force=0
   local yes=0
