@@ -23,28 +23,9 @@ chmod +x "$SYNC_DIR/oc-merge.py" "$SYNC_DIR/oc-sync.sh"
 
 echo "$REPO_URL" > "$SYNC_DIR/repo-url"
 
-python3 - "$SYNC_DIR" <<'PY'
-import os, re, sys
-sync_dir = sys.argv[1]
-path = os.path.expanduser("~/.zshrc")
-with open(path) as f:
-    content = f.read()
-
-# Remove old oc-sync function blocks that contain rclone bisync
-content = re.sub(r'\noc-sync\(\) \{[^}]*rclone bisync[^}]*\n\}\n?', '\n', content, flags=re.DOTALL)
-
-# Remove old source line for the in-data-dir install location
-content = re.sub(r'\n?source "[^"]*/\.local/share/opencode/\.sync/oc-sync\.sh"\n?', '\n', content)
-
-with open(path, "w") as f:
-    f.write(content)
-PY
-
 if ! grep -q "source \"$SYNC_DIR/oc-sync.sh\"" "$HOME/.zshrc" 2>/dev/null; then
   echo "source \"$SYNC_DIR/oc-sync.sh\"" >> "$HOME/.zshrc"
   echo "Added oc-sync to ~/.zshrc"
-else
-  echo "oc-sync already in ~/.zshrc"
 fi
 
 if ! rclone listremotes | grep -q "^koofr:$"; then
