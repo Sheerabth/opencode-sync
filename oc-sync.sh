@@ -38,11 +38,15 @@ oc-sync() {
   echo "Normalizing local DB..."
   python3 "$syncdir/oc-merge.py" --normalize "$working"
 
-  rclone bisync "$dir" "$remote" --create-empty-src-dirs \
+  if ! rclone bisync "$dir" "$remote" --create-empty-src-dirs \
     --exclude "auth.json" --exclude "log/**" --exclude "repos/**" \
     --exclude ".sync/**" --exclude "*.db" --exclude "*.db-wal" --exclude "*.db-shm" \
     --exclude "*.backup.*" --exclude "*.working" \
-    $resync
+    $resync; then
+    echo "Bisync failed. Backup kept at $backup"
+    rm -f "$working"
+    return 1
+  fi
 
   local tmpdir
   tmpdir=$(mktemp -d)
