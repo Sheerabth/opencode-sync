@@ -48,8 +48,8 @@ mkdir -p "$DATA_DIR"
 
 source "$SYNC_DIR/oc-sync.sh"
 
-echo "Running initial oc-sync --resync..."
-oc-sync --resync
+echo "Running initial oc-sync --resync --yes..."
+oc-sync --resync --yes
 
 echo ""
 echo "Setup complete. Reload your shell or run:"
