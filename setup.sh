@@ -48,6 +48,9 @@ mkdir -p "$DATA_DIR"
 
 source "$SYNC_DIR/oc-sync.sh"
 
+echo "Ensuring Koofr sync folder exists..."
+rclone mkdir koofr:opencode
+
 echo "Running initial oc-sync --resync --yes..."
 oc-sync --resync --yes
 

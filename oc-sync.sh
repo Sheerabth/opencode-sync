@@ -21,6 +21,7 @@ oc-sync() {
   fi
 
   mkdir -p "$syncdir"
+  rclone mkdir "$remote" 2>/dev/null || true
 
   if [ ! -f "$dir/opencode.db" ]; then
     echo "Local opencode.db not found at $dir/opencode.db"
