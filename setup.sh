@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_URL="https://raw.githubusercontent.com/YOUR_GITHUB_USER/opencode-sync/main"
+REPO_URL="https://raw.githubusercontent.com/Sheerabth/opencode-sync/main"
 DATA_DIR="$HOME/.local/share/opencode"
 SYNC_DIR="$DATA_DIR/.sync"
 
