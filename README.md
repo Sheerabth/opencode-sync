@@ -21,10 +21,9 @@ session level. For every session id, the version with the latest
 ## Setup
 
 1. Push this repo to GitHub.
-2. Edit `setup.sh` and set `REPO_URL` to your repo's raw `main` branch URL.
-3. On each machine:
+2. On each machine:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/YOUR_USER/opencode-sync/main/setup.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/Sheerabth/opencode-sync/main/setup.sh | bash
    ```
    On a new machine, **run this before launching opencode** so it pulls the DB
    from Koofr instead of creating an empty one.
