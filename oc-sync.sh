@@ -3,13 +3,11 @@ oc-sync() {
   local syncdir="$dir/.sync"
   local remote="koofr:opencode"
   local force=0
-  local resync=""
   local yes=0
 
   for arg in "$@"; do
     case "$arg" in
       -f|--force) force=1 ;;
-      --resync) resync="--resync" ;;
       -y|--yes) yes=1 ;;
       --update) _oc_sync_update_scripts; return ;;
     esac
@@ -30,64 +28,79 @@ oc-sync() {
 
   local backup="$dir/opencode.db.backup.$(date +%s)"
   cp "$dir/opencode.db" "$backup"
-  echo "Backed up local DB to $backup"
 
   local working="$dir/opencode.db.working"
   cp "$dir/opencode.db" "$working"
 
-  echo "Normalizing local DB..."
-  python3 "$syncdir/oc-merge.py" --normalize "$working"
+  python3 "$syncdir/oc-merge.py" --normalize "$working" >/dev/null
+
+  local resync=""
+  if ! rclone lsf "$remote/opencode.db" >/dev/null 2>&1; then
+    resync="--resync"
+  fi
 
   if ! rclone bisync "$dir" "$remote" --create-empty-src-dirs \
     --exclude "auth.json" --exclude "log/**" --exclude "repos/**" \
     --exclude ".sync/**" --exclude "*.db" --exclude "*.db-wal" --exclude "*.db-shm" \
     --exclude "*.backup.*" --exclude "*.working" \
-    $resync; then
-    echo "Bisync failed. Backup kept at $backup"
-    rm -f "$working"
-    return 1
+    $resync >/dev/null 2>&1; then
+    echo "Retrying bisync with --resync..."
+    rclone bisync "$dir" "$remote" --create-empty-src-dirs \
+      --exclude "auth.json" --exclude "log/**" --exclude "repos/**" \
+      --exclude ".sync/**" --exclude "*.db" --exclude "*.db-wal" --exclude "*.db-shm" \
+      --exclude "*.backup.*" --exclude "*.working" \
+      --resync >/dev/null 2>&1 || {
+        echo "Bisync failed. Backup kept at $backup"
+        rm -f "$working"
+        return 1
+      }
   fi
 
   local tmpdir
   tmpdir=$(mktemp -d)
 
+  local remote_has_db=0
   if rclone lsf "$remote/opencode.db" >/dev/null 2>&1; then
-    echo "Fetching and normalizing remote DB..."
+    remote_has_db=1
     rclone copyto "$remote/opencode.db" "$tmpdir/opencode.db"
-    python3 "$syncdir/oc-merge.py" --normalize "$tmpdir/opencode.db"
+    python3 "$syncdir/oc-merge.py" --normalize "$tmpdir/opencode.db" >/dev/null
 
-    echo ""
-    echo "Preview of changes:"
-    python3 "$syncdir/oc-merge.py" --dry-run "$working" "$tmpdir/opencode.db"
-    echo ""
+    local to_copy
+    to_copy=$(python3 "$syncdir/oc-merge.py" --dry-run "$working" "$tmpdir/opencode.db" | grep -c '^  ses' || true)
 
-    if [ "$yes" -eq 0 ]; then
-      printf "Apply merged DB to local? [Y/n] "
-      read -r reply
-      if [ "$reply" != "" ] && [ "$reply" != "y" ] && [ "$reply" != "Y" ]; then
-        echo "Cancelled. Backup kept at $backup"
-        rm -rf "$tmpdir" "$working"
-        return 1
+    if [ "$to_copy" -gt 0 ]; then
+      echo "Remote has $to_copy newer session(s)."
+      if [ "$yes" -eq 0 ]; then
+        printf "Apply to local? [Y/n] "
+        read -r reply
+        if [ "$reply" != "" ] && [ "$reply" != "y" ] && [ "$reply" != "Y" ]; then
+          echo "Cancelled. Backup kept at $backup"
+          rm -rf "$tmpdir" "$working"
+          return 1
+        fi
       fi
     fi
 
-    python3 "$syncdir/oc-merge.py" "$working" "$tmpdir/opencode.db"
-  else
-    echo "No remote opencode.db found; this machine will seed the remote copy."
+    python3 "$syncdir/oc-merge.py" "$working" "$tmpdir/opencode.db" >/dev/null
   fi
 
   local upload="$tmpdir/opencode.db.upload"
   cp "$working" "$upload"
   rclone copyto "$upload" "$remote/opencode.db"
-  echo "Uploaded normalized DB to remote."
 
-  echo "Denormalizing merged DB for local use..."
-  python3 "$syncdir/oc-merge.py" --denormalize "$working"
+  python3 "$syncdir/oc-merge.py" --denormalize "$working" >/dev/null
 
   mv "$working" "$dir/opencode.db"
-  echo "Local DB updated."
 
   rm -rf "$tmpdir"
+
+  if [ "$remote_has_db" -eq 0 ]; then
+    echo "Seeded remote DB."
+  elif [ "$to_copy" -gt 0 ]; then
+    echo "Synced. Merged $to_copy remote session(s)."
+  else
+    echo "Synced. No remote changes."
+  fi
 }
 
 _oc_sync_update_scripts() {

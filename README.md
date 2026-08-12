@@ -32,7 +32,7 @@ paths. Each machine denormalizes to its own home dir on download.
    ```
 3. Close opencode and run the first sync:
    ```bash
-   oc-sync --resync
+   oc-sync
    ```
    On a new machine, **run this before launching opencode** so it pulls the DB
    from Koofr instead of creating an empty one.
@@ -40,11 +40,10 @@ paths. Each machine denormalizes to its own home dir on download.
 ## Usage
 
 ```bash
-oc-sync          # normal sync (interactive confirmation)
-oc-sync -y       # skip confirmation
-oc-sync -f       # force even if opencode appears running
-oc-sync --resync # recover stale bisync state
-oc-sync --update # re-download scripts from GitHub
+oc-sync       # sync (auto-resync on first run, asks only if remote has new sessions)
+oc-sync -y    # skip confirmation
+oc-sync -f    # force even if opencode appears running
+oc-sync --update  # re-download scripts from GitHub
 ```
 
 ## How the sync works
